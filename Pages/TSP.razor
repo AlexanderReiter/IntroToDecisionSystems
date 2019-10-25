@@ -2,7 +2,7 @@
 
 <h1>TSPSolver</h1>
 
-@if (forecasts == null)
+@if (tour == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -18,13 +18,10 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (Tour tour in tours)
             {
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@tour.Name</td>
                 </tr>
             }
         </tbody>
@@ -32,21 +29,25 @@ else
 }
 
 @code {
-    WeatherForecast[] forecasts;
+    Tour[] tours;
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("data/tspspecs.json");
+        forecasts = await Http.GetJsonAsync<Tour[]>("data/tspspecs.json");
     }
 
-    public class WeatherForecast
+    public class Tour
     {
-        public DateTime Date { get; set; }
+        public string Name { get; set; }
 
-        public int TemperatureC { get; set; }
+        public int[] OptimalTour { get; set; }
 
-        public string Summary { get; set; }
+        public City[] cities { get; set; }
+    }
 
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public class City
+    {
+        public float X { get; set; }
+        public float Y { get; set; }
     }
 }
