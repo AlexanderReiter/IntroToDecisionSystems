@@ -9,19 +9,24 @@
 }
 else
 {
-    <label>
-        <p>TSP specification:</p>
-        <select class="form-control">
-            @foreach(var spec in specs)
-            {
-                <option>@spec.Name</option>
-            }
-        </select>
-    </label>
+    <form>
+        <label>
+            <p>TSP specification:</p>
+            <select class="form-control" @onchange="TSPSpecSelected">
+                @foreach (var spec in specs)
+                {
+                    <option>@spec.Name</option>
+                }
+            </select>
+        </label>
+    </form>
+
+    <BECanvas @ref="scene" Width="500" Height="500"></BECanvas>
 }
 
 @code {
     TSPSpec[] specs;
+    TSPSpec selectedTSPSpec;
 
     protected override async Task OnInitializedAsync()
     {
@@ -31,6 +36,7 @@ else
             .Select(SerializableTSPSpec.ToDomain)
             .OrderBy(spec => spec.Cities.Count)
             .ToArray();
+        selectedTSPSpec = specs.FirstOrDefault();
     }
 
     public class SerializableTSPSpec
@@ -70,5 +76,26 @@ else
         {
             return new Location(location.X, location.Y);
         }
+    }
+
+    private void TSPSpecSelected(ChangeEventArgs e)
+    {
+        var specName = (string)e.Value;
+        Console.WriteLine("Selected spec: " + specName);
+
+        selectedTSPSpec = specs.Single(spec => spec.Name == specName);
+    }
+
+    BECanvasComponent scene;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(scene == null)
+        {
+            return;
+        }
+
+        var context = await scene.CreateCanvas2DAsync();
+        await context.ClearRectAsync(0, 0, scene.Width, scene.Height);
     }
 }
