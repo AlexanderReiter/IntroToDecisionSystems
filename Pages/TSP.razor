@@ -81,8 +81,6 @@ else
     private void TSPSpecSelected(ChangeEventArgs e)
     {
         var specName = (string)e.Value;
-        Console.WriteLine("Selected spec: " + specName);
-
         selectedTSPSpec = specs.Single(spec => spec.Name == specName);
     }
 
@@ -90,12 +88,47 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(scene == null)
-        {
-            return;
-        }
+        if (scene == null) return;
 
         var context = await scene.CreateCanvas2DAsync();
         await context.ClearRectAsync(0, 0, scene.Width, scene.Height);
+
+        if (selectedTSPSpec == null) return;
+
+        var minX = selectedTSPSpec.Cities
+            .Select(location => location.X)
+            .Min();
+
+        var minY = selectedTSPSpec.Cities
+            .Min(location => location.Y);
+
+        var maxX = selectedTSPSpec.Cities
+            .Max(location => location.X);
+
+        var maxY = selectedTSPSpec.Cities
+            .Max(location => location.Y);
+
+        Location GetSceneCoordinates(Location city)
+        {
+            var padding = 10;
+            var xRatio = (scene.Width - 2 * padding) / (maxX - minX);
+            var yRatio = (scene.Height - 2 * padding) / (maxY - minY);
+
+            var x = (city.X - minX) * xRatio + padding;
+            var y = (city.Y - minY) * yRatio + padding;
+
+            return new Location(x, y);
+        }
+
+        foreach (var city in selectedTSPSpec.Cities)
+        {
+            await context.BeginPathAsync();
+
+            var coordinates = GetSceneCoordinates(city);
+
+            await context.ArcAsync(coordinates.X, coordinates.Y, 5, 0, Math.PI * 2);
+            await context.FillAsync();
+        }
     }
+
 }
