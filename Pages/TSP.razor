@@ -9,6 +9,8 @@
 }
 else
 {
+    var optimalTourDistance = Utils.GetDistance(selectedTSPSpec.OptimalTour, selectedTSPSpec.Cities);
+
     <form>
         <label>
             <p>TSP specification:</p>
@@ -19,6 +21,9 @@ else
                 }
             </select>
         </label>
+        <label>
+            <input type="checkbox" @bind="showOptimalTour"/>Show optimal tour (Distance = @optimalTourDistance)
+        </label>
     </form>
 
     <BECanvas @ref="scene" Width="500" Height="500"></BECanvas>
@@ -27,6 +32,7 @@ else
 @code {
     TSPSpec[] specs;
     TSPSpec selectedTSPSpec;
+    bool showOptimalTour = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -119,6 +125,30 @@ else
 
             return new Location(x, y);
         }
+
+        async Task DrawTour (string color, IReadOnlyList<int> tour)
+        {
+            await context.BeginPathAsync();
+
+            var coordinates = selectedTSPSpec.Cities
+                .Select(GetSceneCoordinates)
+                .ToArray();
+
+            var startCoordinate = coordinates[tour[0] - 1];
+            await context.MoveToAsync(startCoordinate.X, startCoordinate.Y);
+
+            foreach (var cityIndex in tour.Skip(1))
+            {
+                var coordinate = coordinates[cityIndex - 1];
+                await context.LineToAsync(coordinate.X, coordinate.Y);
+            }
+
+            await context.LineToAsync(startCoordinate.X, startCoordinate.Y);
+            await context.SetStrokeStyleAsync(color);
+            await context.StrokeAsync();
+        }
+
+        if(showOptimalTour) await DrawTour("lime", selectedTSPSpec.OptimalTour);
 
         foreach (var city in selectedTSPSpec.Cities)
         {
