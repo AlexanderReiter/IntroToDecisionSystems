@@ -36,7 +36,7 @@ namespace TSPSolver.TSP
 
     public static class EnumerableExtensions
     {
-        public static IEnumerable<double> Pairwise(this IEnumerable<Location> source, Func<Location, Location, double> fn)
+        public static IEnumerable<double> Pairwise(this IEnumerable<Location> source, Func<Location, Location, double> fn)  //ExtensionMethod
         {
             if (source is null)
             {
@@ -47,7 +47,7 @@ namespace TSPSolver.TSP
             {
                 throw new ArgumentNullException(nameof(fn));
             }
-
+            
             return source.Zip(source.Skip(1), fn);
         }
     }
